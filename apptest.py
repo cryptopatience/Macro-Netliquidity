@@ -949,6 +949,136 @@ with tab1:
         - 60일 변화: {netliq_60d:+.2f}%
         - 시그널: {signal}
         """)
+    
+    st.markdown("---")
+    st.markdown("### 💡 유동성 해석")
+    
+    netliq_current = latest['NetLiq']
+    netliq_ma30 = df_recent['NetLiq'].tail(30).mean()
+    netliq_ma90 = df_recent['NetLiq'].tail(90).mean()
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric("현재 Net Liquidity", f"${netliq_current/1e6:.2f}T")
+    with col2:
+        st.metric("30일 평균", f"${netliq_ma30/1e6:.2f}T", 
+                  f"{((netliq_current - netliq_ma30) / netliq_ma30 * 100):+.2f}%")
+    with col3:
+        st.metric("90일 평균", f"${netliq_ma90/1e6:.2f}T", 
+                  f"{((netliq_current - netliq_ma90) / netliq_ma90 * 100):+.2f}%")
+    
+    # 유동성 추세 판단
+    if netliq_current > netliq_ma30 and netliq_current > netliq_ma90:
+        st.success("""
+        📈 **유동성 확장 추세**
+        - Fed의 자산 매입 또는 TGA/RRP 감소
+        - 시장에 달러 공급 증가
+        - 리스크 자산 강세 환경
+        - 비트코인/주식 상승 지지
+        - **전략**: 공격적 포지셔닝 고려
+        """)
+    elif netliq_current < netliq_ma30 and netliq_current < netliq_ma90:
+        st.warning("""
+        📉 **유동성 축소 추세**
+        - Fed의 양적긴축(QT) 또는 TGA/RRP 증가
+        - 시장 달러 유동성 감소
+        - 리스크 자산 약세 압력
+        - 비트코인/주식 하락 가능성
+        - **전략**: 방어적 포지션, 현금 비중 확대
+        """)
+    else:
+        st.info("""
+        ⚖️ **유동성 중립 구간**
+        - 단기/중기 평균 사이에서 등락
+        - 뚜렷한 추세 없음
+        - 다른 지표 참고 필요
+        - **전략**: 관망 또는 선별적 대응
+        """)
+    
+    st.markdown("---")
+    st.markdown("### 🔍 유동성 구성 요소 분석")
+    
+    # 최근 변화율 계산
+    netliq_7d = df_recent['NetLiq'].pct_change(7).iloc[-1] * 100
+    netliq_30d = df_recent['NetLiq'].pct_change(30).iloc[-1] * 100
+    netliq_90d = df_recent['NetLiq'].pct_change(90).iloc[-1] * 100
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("#### 📅 기간별 변화")
+        st.metric("7일", f"{netliq_7d:+.2f}%")
+        st.metric("30일", f"{netliq_30d:+.2f}%")
+        st.metric("90일", f"{netliq_90d:+.2f}%")
+    
+    with col2:
+        st.markdown("#### 💰 위험자산 반응")
+        btc_corr_recent = corr_btc.iloc[-1]
+        nasdaq_corr_recent = corr_nasdaq.iloc[-1]
+        
+        if btc_corr_recent > 0.5:
+            btc_signal = "🟢 강한 양의 상관"
+        elif btc_corr_recent > 0.3:
+            btc_signal = "🟡 양의 상관"
+        else:
+            btc_signal = "⚪ 약한 상관"
+        
+        if nasdaq_corr_recent > 0.5:
+            nasdaq_signal = "🟢 강한 양의 상관"
+        elif nasdaq_corr_recent > 0.3:
+            nasdaq_signal = "🟡 양의 상관"
+        else:
+            nasdaq_signal = "⚪ 약한 상관"
+        
+        st.info(f"""
+        **BTC 반응**: {btc_signal}
+        - 상관계수: {btc_corr_recent:.3f}
+        
+        **NASDAQ 반응**: {nasdaq_signal}
+        - 상관계수: {nasdaq_corr_recent:.3f}
+        """)
+    
+    with col3:
+        st.markdown("#### 🎯 투자 시사점")
+        
+        # 종합 점수 계산
+        score = 0
+        if netliq_60d > 2:
+            score += 2
+        elif netliq_60d > 0:
+            score += 1
+        elif netliq_60d < -2:
+            score -= 2
+        else:
+            score -= 1
+        
+        if btc_corr_recent > 0.5 and nasdaq_corr_recent > 0.5:
+            score += 1
+        
+        if score >= 2:
+            st.success("""
+            **강한 매수 환경**
+            - 유동성 확장 중
+            - 위험자산 강세
+            """)
+        elif score == 1:
+            st.info("""
+            **약한 매수 환경**
+            - 유동성 소폭 증가
+            - 선별적 접근
+            """)
+        elif score == 0:
+            st.warning("""
+            **중립**
+            - 관망 추천
+            """)
+        else:
+            st.error("""
+            **매도 환경**
+            - 유동성 축소
+            - 현금 확보
+            """)
 
 # ============================================================
 # TAB 2: Dollar Index vs BTC & S&P 500 (업데이트)
