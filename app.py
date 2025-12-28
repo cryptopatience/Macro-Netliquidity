@@ -8,7 +8,7 @@ def check_password():
     if st.session_state.get('password_correct', False):
         return True
 
-    st.title("🔒 퀀트 대시보드 로그인")
+    st.title("🔒 매크로 Net liquidity HY Spread")
     
     with st.form("credentials"):
         username = st.text_input("아이디 (ID)", key="username")
@@ -669,10 +669,10 @@ st.sidebar.info("""
 # ============================================================
 # 메인 타이틀
 # ============================================================
-st.title("🤖 AI 기반 퀀트 3콤보 분석 대시보드")
+st.title("매크로 Net liquidity HY Spread")
 st.markdown("""
-**Fed 유동성, 달러 인덱스, HY Spread + Gemini AI 분석**  
-실시간 FRED 데이터 기반 인터랙티브 대시보드 + AI 투자 인사이트
+**Fed 유동성, 달러 인덱스, HY Spread **  
+실시간 FRED 데이터 기반 인터랙티브 분석 
 """)
 st.markdown("---")
 
