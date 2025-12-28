@@ -1310,12 +1310,24 @@ with tab3:
         - 신용 시장 안정
         - 다른 지표 참고
         """)
-
 # ============================================================
 # TAB 4: 종합 대시보드 (업데이트)
 # ============================================================
 with tab4:
     st.header("🎯 종합 대시보드")
+    
+    # Z-score 데이터 준비 (TAB 4용)
+    df_z_combo1 = df_recent[['NetLiq', 'BTC', 'NASDAQ']].apply(zscore)
+    df_z_combo2 = pd.DataFrame({
+        'DXY_Inverted': zscore(-df_recent['DXY']),
+        'BTC': zscore(df_recent['BTC']),
+        'SP500': zscore(df_recent['SP500'])
+    })
+    df_z_combo3 = pd.DataFrame({
+        'HYSpread': zscore(df_recent['HYSpread']),
+        'SP500': zscore(df_recent['SP500']),
+        'BTC': zscore(df_recent['BTC'])
+    })
     
     fig_dashboard = make_subplots(
         rows=3, cols=2,
@@ -1338,19 +1350,18 @@ with tab4:
     )
     
     # Row 1, Col 1: Net Liquidity
-    df_z_all = df_recent[['NetLiq', 'BTC', 'NASDAQ']].apply(zscore)
     fig_dashboard.add_trace(
-        go.Scatter(x=df_z_all.index, y=df_z_all['NetLiq'],
+        go.Scatter(x=df_z_combo1.index, y=df_z_combo1['NetLiq'],
                    name='Net Liquidity', line=dict(color='#2E86AB', width=2)),
         row=1, col=1
     )
     fig_dashboard.add_trace(
-        go.Scatter(x=df_z_all.index, y=df_z_all['BTC'],
+        go.Scatter(x=df_z_combo1.index, y=df_z_combo1['BTC'],
                    name='Bitcoin', line=dict(color='#F77F00', width=2)),
         row=1, col=1
     )
     fig_dashboard.add_trace(
-        go.Scatter(x=df_z_all.index, y=df_z_all['NASDAQ'],
+        go.Scatter(x=df_z_combo1.index, y=df_z_combo1['NASDAQ'],
                    name='NASDAQ', line=dict(color='#06A77D', width=2)),
         row=1, col=1
     )
@@ -1376,17 +1387,17 @@ with tab4:
     
     # Row 2, Col 1: DXY vs BTC/S&P500
     fig_dashboard.add_trace(
-        go.Scatter(x=df_z2.index, y=df_z2['DXY_Inverted'],
+        go.Scatter(x=df_z_combo2.index, y=df_z_combo2['DXY_Inverted'],
                    name='DXY (반전)', line=dict(color='#D62828', width=2)),
         row=2, col=1
     )
     fig_dashboard.add_trace(
-        go.Scatter(x=df_z2.index, y=df_z2['BTC'],
+        go.Scatter(x=df_z_combo2.index, y=df_z_combo2['BTC'],
                    name='BTC', line=dict(color='#F77F00', width=2)),
         row=2, col=1
     )
     fig_dashboard.add_trace(
-        go.Scatter(x=df_z2.index, y=df_z2['SP500'],
+        go.Scatter(x=df_z_combo2.index, y=df_z_combo2['SP500'],
                    name='S&P500', line=dict(color='#2E86AB', width=2)),
         row=2, col=1
     )
@@ -1407,19 +1418,19 @@ with tab4:
     )
     fig_dashboard.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5, row=2, col=2)
     
-    # Row 3, Col 1: HY Spread vs S&P500/BTC (Z-score로 변경)
+    # Row 3, Col 1: HY Spread vs S&P500/BTC (Z-score)
     fig_dashboard.add_trace(
-        go.Scatter(x=df_z3.index, y=df_z3['HYSpread'],
+        go.Scatter(x=df_z_combo3.index, y=df_z_combo3['HYSpread'],
                    name='HY Spread', line=dict(color='#D62828', width=2.5)),
         row=3, col=1
     )
     fig_dashboard.add_trace(
-        go.Scatter(x=df_z3.index, y=df_z3['SP500'],
+        go.Scatter(x=df_z_combo3.index, y=df_z_combo3['SP500'],
                    name='S&P 500', line=dict(color='#2E86AB', width=2)),
         row=3, col=1
     )
     fig_dashboard.add_trace(
-        go.Scatter(x=df_z3.index, y=df_z3['BTC'],
+        go.Scatter(x=df_z_combo3.index, y=df_z_combo3['BTC'],
                    name='Bitcoin', line=dict(color='#F77F00', width=1.5), opacity=0.7),
         row=3, col=1
     )
@@ -1450,7 +1461,7 @@ with tab4:
     fig_dashboard.update_yaxes(title_text="Z-score", row=1, col=1)
     fig_dashboard.update_yaxes(title_text="Z-score", row=2, col=1)
     fig_dashboard.update_yaxes(title_text="Correlation", row=2, col=2)
-    fig_dashboard.update_yaxes(title_text="Z-score", row=3, col=1)  # 변경됨!
+    fig_dashboard.update_yaxes(title_text="Z-score", row=3, col=1)
     fig_dashboard.update_yaxes(title_text="Correlation", row=3, col=2)
     
     st.plotly_chart(fig_dashboard, use_container_width=True)
