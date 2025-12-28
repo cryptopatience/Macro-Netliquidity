@@ -45,7 +45,7 @@ warnings.filterwarnings('ignore')
 # 페이지 설정
 # ============================================================
 st.set_page_config(
-    page_title="퀀트 3콤보 대시보드 + AI",
+    page_title="매크로 Net liquidity HY Spread",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
