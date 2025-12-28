@@ -1126,52 +1126,45 @@ with tab3:
     st.header("⚠️ 콤보 3: High Yield Spread 분석")
     st.markdown("**HY Spread 상승 = 신용 위험 증가 = 위험자산 경계**")
     
+    # Z-score 정규화 추가
+    df_z3 = pd.DataFrame({
+        'HYSpread': zscore(df_recent['HYSpread']),
+        'SP500': zscore(df_recent['SP500']),
+        'BTC': zscore(df_recent['BTC'])
+    })
+    
     fig3 = make_subplots(
         rows=4, cols=1,
         subplot_titles=(
-            'High Yield Spread vs S&P 500 / BTC',
+            'High Yield Spread vs S&P 500 / BTC (Z-score)',
             f'HY Spread 상관계수 ({window}일 롤링)',
             'Divergence 감지: S&P 상승 + HY Spread 상승 (매도 신호)',
             'HY Spread 원본 차트'
         ),
-        specs=[
-            [{"secondary_y": True}],
-            [{"secondary_y": False}],
-            [{"secondary_y": False}],
-            [{"secondary_y": False}]
-        ],
         vertical_spacing=0.08,
         row_heights=[0.3, 0.25, 0.25, 0.20]
     )
     
-    # 첫 번째 차트: HY Spread vs S&P 500 & BTC
+    # 첫 번째 차트: HY Spread vs S&P 500 & BTC (Z-score)
     fig3.add_trace(
-        go.Scatter(x=df_recent.index, y=df_recent['SP500'],
-                   name='S&P 500',
-                   line=dict(color='#2E86AB', width=2.5)),
-        row=1, col=1, secondary_y=False
-    )
-    fig3.add_trace(
-        go.Scatter(x=df_recent.index, y=df_recent['BTC'],
-                   name='Bitcoin',
-                   line=dict(color='#F77F00', width=2),
-                   opacity=0.6),
-        row=1, col=1, secondary_y=False
-    )
-    fig3.add_trace(
-        go.Scatter(x=df_recent.index, y=df_recent['HYSpread'],
+        go.Scatter(x=df_z3.index, y=df_z3['HYSpread'],
                    name='HY Spread',
                    line=dict(color='#D62828', width=2.5)),
-        row=1, col=1, secondary_y=True
+        row=1, col=1
     )
-    
-    danger_zone = df_recent[df_recent['HYSpread'] > 5.0]
-    if len(danger_zone) > 0:
-        fig3.add_hline(y=5.0, line_dash="dash", line_color="darkred",
-                       line_width=2.5, opacity=0.8,
-                       annotation_text="위기 임계점 (5%)",
-                       annotation_position="right",
-                       row=1, col=1, secondary_y=True)
+    fig3.add_trace(
+        go.Scatter(x=df_z3.index, y=df_z3['SP500'],
+                   name='S&P 500',
+                   line=dict(color='#2E86AB', width=2.5)),
+        row=1, col=1
+    )
+    fig3.add_trace(
+        go.Scatter(x=df_z3.index, y=df_z3['BTC'],
+                   name='Bitcoin',
+                   line=dict(color='#F77F00', width=2)),
+        row=1, col=1
+    )
+    fig3.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5, row=1, col=1)
     
     # 두 번째 차트: 상관계수
     fig3.add_trace(
@@ -1190,7 +1183,7 @@ with tab3:
     )
     fig3.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5, row=2, col=1)
     
-    # 세 번째 차트: Divergence
+    # 세 번째 차트: Divergence (원본 가격 유지)
     fig3.add_trace(
         go.Scatter(x=df_recent.index, y=df_recent['SP500'],
                    name='S&P 500',
@@ -1226,8 +1219,7 @@ with tab3:
         template='plotly_white'
     )
     
-    fig3.update_yaxes(title_text="가격", row=1, col=1, secondary_y=False)
-    fig3.update_yaxes(title_text="HY Spread (%)", row=1, col=1, secondary_y=True)
+    fig3.update_yaxes(title_text="Z-score", row=1, col=1)
     fig3.update_yaxes(title_text="Correlation", row=2, col=1)
     fig3.update_yaxes(title_text="S&P 500", row=3, col=1)
     fig3.update_yaxes(title_text="HY Spread (%)", row=4, col=1)
@@ -1318,6 +1310,7 @@ with tab3:
         - 신용 시장 안정
         - 다른 지표 참고
         """)
+
 
 # ============================================================
 # TAB 4: 종합 대시보드 (업데이트)
