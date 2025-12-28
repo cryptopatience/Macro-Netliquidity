@@ -1311,7 +1311,6 @@ with tab3:
         - 다른 지표 참고
         """)
 
-
 # ============================================================
 # TAB 4: 종합 대시보드 (업데이트)
 # ============================================================
@@ -1323,15 +1322,15 @@ with tab4:
         subplot_titles=(
             'Net Liquidity + BTC/NASDAQ (Z-score)',
             '상관계수 히트맵',
-            'Dollar Index (반전) vs BTC/S&P500',
+            'Dollar Index (반전) vs BTC/S&P500 (Z-score)',
             'DXY 상관계수',
-            'HY Spread vs S&P500/BTC',
+            'HY Spread vs S&P500/BTC (Z-score)',
             'HY Spread 상관계수'
         ),
         specs=[
             [{"type": "xy"}, {"type": "heatmap"}],
             [{"type": "xy"}, {"type": "xy"}],
-            [{"type": "xy", "secondary_y": True}, {"type": "xy"}]
+            [{"type": "xy"}, {"type": "xy"}]
         ],
         vertical_spacing=0.12,
         horizontal_spacing=0.12,
@@ -1408,22 +1407,23 @@ with tab4:
     )
     fig_dashboard.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5, row=2, col=2)
     
-    # Row 3, Col 1: HY Spread vs S&P500/BTC
+    # Row 3, Col 1: HY Spread vs S&P500/BTC (Z-score로 변경)
     fig_dashboard.add_trace(
-        go.Scatter(x=df_recent.index, y=df_recent['SP500'],
+        go.Scatter(x=df_z3.index, y=df_z3['HYSpread'],
+                   name='HY Spread', line=dict(color='#D62828', width=2.5)),
+        row=3, col=1
+    )
+    fig_dashboard.add_trace(
+        go.Scatter(x=df_z3.index, y=df_z3['SP500'],
                    name='S&P 500', line=dict(color='#2E86AB', width=2)),
-        row=3, col=1, secondary_y=False
+        row=3, col=1
     )
     fig_dashboard.add_trace(
-        go.Scatter(x=df_recent.index, y=df_recent['BTC'],
-                   name='Bitcoin', line=dict(color='#F77F00', width=1.5), opacity=0.6),
-        row=3, col=1, secondary_y=False
+        go.Scatter(x=df_z3.index, y=df_z3['BTC'],
+                   name='Bitcoin', line=dict(color='#F77F00', width=1.5), opacity=0.7),
+        row=3, col=1
     )
-    fig_dashboard.add_trace(
-        go.Scatter(x=df_recent.index, y=df_recent['HYSpread'],
-                   name='HY Spread', line=dict(color='#D62828', width=2)),
-        row=3, col=1, secondary_y=True
-    )
+    fig_dashboard.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5, row=3, col=1)
     
     # Row 3, Col 2: HY Spread 상관계수
     fig_dashboard.add_trace(
@@ -1450,8 +1450,7 @@ with tab4:
     fig_dashboard.update_yaxes(title_text="Z-score", row=1, col=1)
     fig_dashboard.update_yaxes(title_text="Z-score", row=2, col=1)
     fig_dashboard.update_yaxes(title_text="Correlation", row=2, col=2)
-    fig_dashboard.update_yaxes(title_text="가격", row=3, col=1, secondary_y=False)
-    fig_dashboard.update_yaxes(title_text="HY Spread (%)", row=3, col=1, secondary_y=True)
+    fig_dashboard.update_yaxes(title_text="Z-score", row=3, col=1)  # 변경됨!
     fig_dashboard.update_yaxes(title_text="Correlation", row=3, col=2)
     
     st.plotly_chart(fig_dashboard, use_container_width=True)
